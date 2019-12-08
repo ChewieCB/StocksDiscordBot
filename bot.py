@@ -2,8 +2,6 @@ import re
 import yaml
 import discord
 
-from finance import get_stocks
-
 # Initialise the discord client
 client = discord.Client()
 # Read the API keys from the config file
@@ -27,10 +25,12 @@ async def on_message(message):
             email_address = re.search(r'[\w\.-]+@[\w\.-]+', message.content).group()
         except AttributeError:
             email_address = None
+
         if email_address:
             # Find the premium role
             premium_role = [role for role in client.guilds[0].roles if role.name.lower() == 'premium'][0]
             user_roles = message.author.roles
+            # Check whether or not the user has the premium role
             if premium_role in user_roles:
                 # Alert the user that they are already premium
                 await message.channel.send(f"{message.author.mention} You are already a premium member!")
