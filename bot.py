@@ -1,8 +1,8 @@
 import re
 import yaml
 import discord
-from yahoo_finance import Share
 
+from finance import get_stocks
 
 # Initialise the discord client
 client = discord.Client()
@@ -23,7 +23,10 @@ async def on_message(message):
         return
     if message.content.startswith('!assign'):
         # Use a regex function to search for an email address in the message
-        email_address = re.search(r'[\w\.-]+@[\w\.-]+', message.content).group()
+        try:
+            email_address = re.search(r'[\w\.-]+@[\w\.-]+', message.content).group()
+        except AttributeError:
+            email_address = None
         if email_address:
             # Find the premium role
             premium_role = [role for role in client.guilds[0].roles if role.name.lower() == 'premium'][0]
@@ -33,7 +36,6 @@ async def on_message(message):
                 await message.channel.send(f"{message.author.mention} You are already a premium member!")
             else:
                 # Upgrade the user role to premium
-
                 await message.author.add_roles(premium_role)
                 await message.channel.send(f"{message.author.mention} Welcome to premium!")
         else:
@@ -42,12 +44,17 @@ async def on_message(message):
             await message.channel.send(
                 f"{message.author.mention} {no_email_msg}"
             )
+    elif message.content.startswith('!stocks'):
+        # Retrieve the current stocks
+        # get_stocks(credentials['STOCKS'])
+        pass
+    # Delete the user's initial message
+    await message.delete()
 
 
 @client.event
 async def on_ready():
     print(f'{client.user} has connected to Discord!')
 
+
 client.run(credentials['DISCORD']['TOKEN'])
-
-
