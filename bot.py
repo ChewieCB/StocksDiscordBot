@@ -13,7 +13,7 @@ with open('config.yaml', 'r') as config_file:
 async def on_message(message):
     """
     Wait for a user to post a message, check for the key word "!assign" and an email address, update
-    :param message:
+    :param message: A message posted in a discord server that the bot is part of.
     :return:
     """
     # Check the message has been sent by a user, to stop the bot replying to itself
