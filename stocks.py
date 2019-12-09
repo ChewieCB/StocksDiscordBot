@@ -11,93 +11,135 @@ with open('config.yaml', 'r') as config_file:
 stocks_list = credentials['STOCKS']
 
 
-def get_live_prices(stocks: list):
-    """"""
+def get_live_prices(stock, null_var = None):
+    """
+    Get the current price of a given stock.
+    :param stocks:
+    :return:
+    """
     # Get live prices for each stock
-    live_prices = {
-        stock: si.get_live_price(stock) for stock in stocks
-    }
+    try:
+        _live_data = si.get_live_price(stock)
+    except ValueError:
+        _live_data = None
 
-    return live_prices
+    return _live_data
 
 
-def get_closing_prices(stock, length: int = 200):
-    """"""
+def get_closing_prices(stock, _days: int = 365):
+    """
+    Get the historical closing prices for a given stock.
+    :param stock: Name of the stock to get prices for.
+    :param _days: How many days in the past to pull stocks from (start date).
+    :return: Historical closing prices for the given stock from the start date to present.
+    """
     # Get current date
     current_date = datetime.datetime.now()
     # Set start date (length) days before current date
-    _start = current_date - datetime.timedelta(days=length)
+    _start = current_date - datetime.timedelta(days=_days)
     # Get previous close price
-    all_closing_data = si.get_data(stock, start_date=_start)['close']
-    # yesterdays_closing_data = all_closing_data[-1]
+    try:
+        _closing_data = si.get_data(stock, start_date=_start)['close']
+    except ValueError:
+        _closing_data = None
 
-    return all_closing_data#, yesterdays_closing_data
-
-
-def get_bollinger_bands(closing_data, length: int = 200, deviation: int = 1):
-    """"""
-    # TODO
-    for stock in closing_data:
-        # Get rolling window of stock
-        _rolling = stock.rolling(window=length)
-        # Get moving average and standard deviation
-        stock[f'{length} Day MA'] = _rolling.mean()
-        stock[f'{length} Day STD'] = _rolling.std()
-        # Calculate upper and lower bollinger bands
-        stock['Upper Band'] = stock[f'{length} Day MA'] + (stock[f'{length} Day STD'] * deviation)
-        stock['Lower Band'] = stock[f'{length} Day MA'] - (stock[f'{length} Day STD'] * deviation)
-        # stock[f'{length} Day MA'] = stock.rolling(window=length).mean()
-        #
-        # stock[f'{length} Day STD'] = stock.rolling(window=length).std()
-
-    return closing_data
+    return _closing_data
 
 
-def get_trends(stocks, live_prices, closing_prices, upper_band, lower_band):
-    """"""
+def get_bollinger_bands(stock: pd.DataFrame, length: int = 200, deviations: int = 1):
+    """
+    Calculate the rolling average and standard deviation from stock closing prices data to calculate the upper and
+        lower bolling bands for a stock.
+    :param stock: A DataFrame containing the live, closing, and previous closing prices for a stock.
+    :param length: The length (in days) of the window for the rolling average.
+    :param deviations: The number of standard deviations to use.
+    :return: An updated DataFrame containing the upper and lower bolling bands.
+    """
+    # Get moving average and standard deviation
+    stock[f'{length} Day MA'] = stock['Closing Prices'].rolling(window=length).mean()
+    stock[f'{length} Day STD'] = stock['Closing Prices'].rolling(window=length).std()
+    # Calculate upper and lower bollinger bands
+    stock['Upper Band'] = stock[f'{length} Day MA'] + (stock[f'{length} Day STD'] * deviations)
+    stock['Lower Band'] = stock[f'{length} Day MA'] - (stock[f'{length} Day STD'] * deviations)
+
+    return stock
+
+
+def get_trends(data: dict):
+    """
+    Analyse the price data for each stock and assign any uptrending or downtrending stocks to a list to be
+        outputted by the discord bot.
+    :param data: A dictionary of stocks and their respective price data.
+    :return: A list of each uptrending, recently started uptrending, downtrending, and recently started
+        downtrending stocks.
+    """
     uptrending = []
     recently_started_uptrending = []
     downtrending = []
     recently_started_downtrending = []
 
-    for stock in stocks:
+    for stock, dataframe in data.items():
         # uptrending
-        if live_prices[stock] > upper_band:
-            if closing_prices[stock][-1] < upper_band:
+        if dataframe['Live Price'][-1] > dataframe['Upper Band'][-1]:
+            if dataframe['Previous Closing Price'][-1] < dataframe['Upper Band'][-1]:
                 recently_started_uptrending.append(stock)
             else:
                 uptrending.append(stock)
         # downtrending
-        elif live_prices[stock] < lower_band:
-            if closing_prices[stock][-1] > lower_band:
+        elif dataframe['Live Price'][-1] < dataframe['Lower Band'][-1]:
+            if dataframe['Previous Closing Price'][-1] > dataframe['Lower Band'][-1]:
                 recently_started_downtrending.append(stock)
             else:
                 downtrending.append(stock)
 
+    return uptrending, recently_started_uptrending, downtrending, recently_started_downtrending
 
-# TODO: add threading or multiprocessing to speed up getting the stock data
-# if __name__ == 'main':
-# Thread(target=get_live_prices, args=credentials['STOCKS']).start()
-# Thread(target=get_previous_close, args=credentials['STOCKS']).start()
 
-start = datetime.datetime.now()
-# live = get_live_prices(credentials['STOCKS'])
+def main():
+    start = datetime.datetime.now()
+    # Setup multi-threading pool with a worker for each stock
+    with Pool(len(stocks_list) * 2) as p:
+        # Get pool result objects asynchronously
+        _live_workers = {
+            stock: p.apply_async(get_live_prices, args=(stock, None)) for stock in stocks_list
+        }
+        _closing_workers = {
+            stock: p.apply_async(get_closing_prices, args=(stock, 365)) for stock in stocks_list
+        }
+        # Get data from pool objects
+        live_data = {
+            stock: worker.get() for stock, worker in _live_workers.items()
+        }
+        closing_data = {
+            stock: worker.get() for stock, worker in _closing_workers.items()
+        }
+        # Get yesterday's close
+        # TODO: add check for date index to make sure previous close isn't the same day as the current date
+        previous_closes = {
+            stock: data[-1] if closing_data[stock] is not None else None for stock, data in closing_data.items()
+        }
+        # Create a dataframe for each stock
+        dataframes = {
+            stock: pd.DataFrame(data={
+                'Live Price': live_data[stock] if live_data[stock] is not None else [None],
+                'Closing Prices': closing_data[stock] if closing_data[stock] is not None else [None],
+                'Previous Closing Price': previous_closes[stock] if previous_closes[stock] is not None else [None],
+            })
+            for stock in stocks_list
+        }
+        # Get bollinger bands
+        bollinger_bands = {
+            stock: get_bollinger_bands(dataframes[stock]) if dataframes[stock]['Closing Prices'] is not None else [None] for stock in stocks_list
+        }
+        # Analyse the stock trends
+        up, recently_up, down, recently_down = get_trends(bollinger_bands)
+        print(f'UP:\t{up}')
+        print(f'RECENTLY UP:\t{recently_up}')
+        print(f'DOWN:\t{down}')
+        print(f'RECENTLY DOWN:\t{recently_down}')
+        end = datetime.datetime.now()
+        diff = end - start
+        print(f'Runtime: {diff}')
+        # FIXME!!!!!! ------> Find out why some stocks aren't being pulled properly from the yahoo finance API
 
-# Setup multi-threading pool with a worker for each stock
-with Pool(len(stocks_list)) as p:
-    workers = {
-        stock: p.apply_async(get_closing_prices, args=(stock, 200)) for stock in stocks_list
-    }
-    closing_data = {
-        stock: worker.get() for stock, worker in workers.items()
-    }
-
-    for stock, data in closing_data.items():
-        print(f'\n{stock}\n{data}\n')
-
-# bollinger_data = get_bollinger_bands(closing_data)
-
-end = datetime.datetime.now()
-diff = end - start
-print(diff)
-
+main()
