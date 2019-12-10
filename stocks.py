@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import datetime
 import pandas as pd
 from yahoofinancials import YahooFinancials
