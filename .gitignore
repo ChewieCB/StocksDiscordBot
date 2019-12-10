@@ -2,3 +2,4 @@
 .idea/
 venv/
 config.yaml
+google_creds.json
