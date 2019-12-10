@@ -1,5 +1,7 @@
 # StocksDiscordBot
 
+Develoed by **Jack McCaffrey** for **Austin Bouley**.
+
 ## Setup
 ### 1 - Create a Discord bot
 This is detailed here:
