@@ -1,6 +1,6 @@
 # StocksDiscordBot
 
-Develoed by **Jack McCaffrey** for **Austin Bouley**.
+Developed by **Jack McCaffrey** for **Austin Bouley**.
 
 ## Setup
 ### 1 - Create a Discord bot
@@ -27,7 +27,7 @@ This will be in the form "client-email": "xxxxx@xxxxx-xxxxx.iam.gserviceaccount.
 The bot can only change the roles of server members lower than itself in the server hierarchy, for best usage put the bot at the top of the role hierarchy for your server.
 
 ## Bot Functions
-The bot currently has to main functions:
+The bot currently has two main functions:
 ### !assign example@email.com
 - This can be used by anyone in the server. 
 - If the user is not a premium member then they are given a premium role and their username and provided email is stored in the google sheet.
