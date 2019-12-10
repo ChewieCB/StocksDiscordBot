@@ -7,10 +7,13 @@ import discord
 from sheet import write_to_sheet
 from stocks import check_stocks
 
+DIR = os.path.dirname(__file__)
+CONFIG_CREDENTIALS = os.path.join(DIR, 'config.yaml')
+
 # Initialise the discord client
 client = discord.Client()
 # Read the API keys from the config file
-with open(os.path.abspath('config.yaml'), 'r') as config_file:
+with open(CONFIG_CREDENTIALS, 'r') as config_file:
     credentials = yaml.safe_load(config_file)
 
 # Get list of stocks

@@ -6,7 +6,12 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from sheet import write_to_sheet
 
-with open('config.yaml', 'r') as config_file:
+DIR = os.path.dirname(__file__)
+CONFIG_CREDENTIALS = os.path.join(DIR, '../config.yaml')
+GOOGLE_CREDENTIALS_DIR = os.path.join(DIR, '../google_credentials.json')
+TEST_DATA = os.path.join(DIR, 'test_user_data.json')
+
+with open(CONFIG_CREDENTIALS, 'r') as config_file:
     credentials = yaml.safe_load(config_file)
 
 SHEET_URL = credentials['GSPREAD']['SHEET_URL']
@@ -17,7 +22,7 @@ scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-credentials = ServiceAccountCredentials.from_json_keyfile_name(os.path.abspath('google_credentials.json'), scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDENTIALS_DIR, scope)
 gc = gspread.authorize(credentials)
 
 
@@ -30,10 +35,10 @@ class TestCaseSheet:
         :return:
         """
         # Get credentials from config gile
-        with open(os.path.abspath('config.yaml'), 'r') as config_file:
+        with open(CONFIG_CREDENTIALS, 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
         # Get test data
-        with open(os.path.abspath('tests/test_user_data.json'), 'r+') as read_file:
+        with open(TEST_DATA, 'r+') as read_file:
             cls.test_data = json.load(read_file)
         # create a new worksheet and populate it for testing
         cls.sheet = gc.open_by_url(SHEET_URL)

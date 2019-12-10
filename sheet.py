@@ -5,20 +5,23 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 
 
+DIR = os.path.dirname(__file__)
+GOOGLE_CREDENTIALS_DIR = os.path.join(DIR, 'google_credentials.json')
+CONFIG_CREDENTIALS = os.path.join(DIR, 'config.yaml')
+
 # Authorise gspread with Google Drive and Google Sheets API credentials
 # see link for more information -------> https://gspread.readthedocs.io/en/latest/oauth2.html
 scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-google_credentials = ServiceAccountCredentials.from_json_keyfile_name(os.path.abspath('google_credentials.json'), scope)
+google_credentials = ServiceAccountCredentials.from_json_keyfile_name(GOOGLE_CREDENTIALS_DIR, scope)
 gc = gspread.authorize(google_credentials)
 
 # NOTE - you must share the spreadsheet you want to write to with the CLIENT_EMAIL specified in the
 # google_credentials.json file, otherwise the API doesn't have access
 
-
-with open(os.path.abspath('config.yaml'), 'r') as config_file:
+with open(CONFIG_CREDENTIALS, 'r') as config_file:
     credentials = yaml.safe_load(config_file)
 
 SHEET_URL = credentials['GSPREAD']['SHEET_URL']

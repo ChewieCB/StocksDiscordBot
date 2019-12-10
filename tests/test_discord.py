@@ -2,6 +2,9 @@ import os
 import yaml
 import discord
 
+DIR = os.path.dirname(__file__)
+CONFIG_CREDENTIALS = os.path.join(DIR, '../config.yaml')
+
 
 class TestCaseDiscordClient:
 
@@ -9,7 +12,7 @@ class TestCaseDiscordClient:
     def setup_class(cls):
         """Setup any test variables."""
         cls.client = discord.Client()
-        with open(os.path.abspath('config.yaml'), 'r') as config_file:
+        with open(CONFIG_CREDENTIALS, 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
 
     def test_client_connection(self):
