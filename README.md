@@ -4,6 +4,8 @@
 ### 1 - Create a Discord bot
 This is detailed here:
 	https://github.com/reactiflux/discord-irc/wiki/Creating-a-discord-bot-&-getting-a-token
+	
+#### Ensure you give the bot the correct permissions to create, read and delete messages, and to assign roles.
   
 ### 2 - Get a Google Drive and Sheets API Key
 This is detailed here:
@@ -18,6 +20,9 @@ A blank *config.yaml* file should be in the root directory of the bot (*StocksDi
 
 ### 4 - Share your spreadsheet with the email listed in the google_credentials.json file
 This will be in the form "client-email": "xxxxx@xxxxx-xxxxx.iam.gserviceaccount.com", if you do not share the spreadsheet with your API client then the bot cannot access the spreadsheet.
+
+### 5 - Make sure that the bot is at the top of the role hierarchy
+The bot can only change the roles of server members lower than itself in the server hierarchy, for best usage put the bot at the top of the role hierarchy for your server.
 
 ## Bot Functions
 The bot currently has to main functions:
