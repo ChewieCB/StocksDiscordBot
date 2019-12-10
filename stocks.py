@@ -4,12 +4,6 @@ import pandas as pd
 from yahoofinancials import YahooFinancials
 from multiprocessing import Pool
 
-# Read the API keys from the config file
-with open('config.yaml', 'r') as config_file:
-    credentials = yaml.safe_load(config_file)
-
-stocks_list = [stock.upper() for stock in credentials['STOCKS']]
-
 
 def get_bollinger_bands(stock: pd.DataFrame, length: int = 200, deviations: int = 1):
     """
@@ -60,7 +54,12 @@ def get_trends(data: dict):
     return uptrending, recently_started_uptrending, downtrending, recently_started_downtrending
 
 
-def main():
+def check_stocks(stocks_list):
+    """
+
+    :param stocks_list: List of stocks to analyse.
+    :return:
+    """
     start = datetime.datetime.now()
     # Get current date and start date (length) days before current date
     current_date = datetime.datetime.now()
@@ -98,13 +97,14 @@ def main():
         }
     # Analyse the stock trends
     up, recently_up, down, recently_down = get_trends(bollinger_bands)
-    print(f'UP:\t{up}')
-    print(f'RECENTLY UP:\t{recently_up}')
-    print(f'DOWN:\t{down}')
-    print(f'RECENTLY DOWN:\t{recently_down}')
     end = datetime.datetime.now()
     diff = end - start
     print(f'Runtime: {diff}')
 
+    return {
+        'Uptrending': up,
+        'Recently Started Uptrending': recently_up,
+        'Downtrending': down,
+        'Recently Started Downtrending': recently_down,
+    }
 
-main()
