@@ -56,11 +56,12 @@ def get_trends(data: dict):
 
 def check_stocks(stocks_list):
     """
-
+    Given a list of stocks get the current price and closing prices, determine the upper and lower Bollinger bands,
+        and analyse the results to determine any trends.
     :param stocks_list: List of stocks to analyse.
-    :return:
+    :return: A dictionary of uptrending, recently started uptrending, downtrending, and recently started downtrending
+        stocks.
     """
-    start = datetime.datetime.now()
     # Get current date and start date (length) days before current date
     current_date = datetime.datetime.now()
     start_date = current_date - datetime.timedelta(days=365)
@@ -97,9 +98,6 @@ def check_stocks(stocks_list):
         }
     # Analyse the stock trends
     up, recently_up, down, recently_down = get_trends(bollinger_bands)
-    end = datetime.datetime.now()
-    diff = end - start
-    print(f'Runtime: {diff}')
 
     return {
         'Uptrending': up,
