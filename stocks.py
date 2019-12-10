@@ -73,7 +73,7 @@ def check_stocks(stocks_list):
     tickers = [YahooFinancials(stock) for stock in stocks_list]
 
     # Setup multi-threading pool with a worker for each stock
-    with Pool(len(stocks_list) * 4) as p:
+    with Pool(len(stocks_list) * 2) as p:
         # Get pool result objects asynchronously
         _current_workers = {
             ticker.ticker: p.apply_async(ticker.get_current_price) for ticker in tickers
