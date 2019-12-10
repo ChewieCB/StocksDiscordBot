@@ -26,8 +26,7 @@ SHEET = gc.open_by_url(SHEET_URL)
 
 def write_to_sheet(email: str, username: str):
     """
-
-    :param sheet: A gspread worksheet object.
+    Writes a given email and username to the supplied google sheet.
     :param email: A valid email string.
     :param username: A valid username string.
     :return: A string for the bot to display on either success or failure.
