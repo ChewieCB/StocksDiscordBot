@@ -1,5 +1,4 @@
 # Created by .ignore support plugin (hsz.mobi)
 .idea/
 venv/
-config.yaml
-google_credentials.json
+
