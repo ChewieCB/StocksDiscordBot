@@ -12,7 +12,7 @@ class TestCaseStocks:
         """Setup any test variables."""
         with open('config.yaml', 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
-        cls.stocks_list = cls.credentials['STOCKS']
+        cls.stocks_list = [stock.upper() for stock in cls.credentials['STOCKS']]
 
     @pytest.skip
     def test_live_prices(self):
