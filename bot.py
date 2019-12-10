@@ -3,12 +3,16 @@ import yaml
 import discord
 
 from sheet import write_to_sheet
+from stocks import check_stocks
 
 # Initialise the discord client
 client = discord.Client()
 # Read the API keys from the config file
 with open('config.yaml', 'r') as config_file:
     credentials = yaml.safe_load(config_file)
+
+# Get list of stocks
+stocks_list = [stock.upper() for stock in credentials['STOCKS']]
 
 
 @client.event
@@ -55,9 +59,12 @@ async def on_message(message):
         await message.delete()
     elif message.content.startswith('!stocks'):
         # Retrieve the current stocks
-        # get_stocks(credentials['STOCKS'])
-        #
-        pass
+        trending = check_stocks(stocks_list)
+        stocks_response = f"Recently Started Uptrending:\n{trending['Recently Started Uptrending']}\n\n" \
+            f"Recently Started Downtrending:\n{trending['Recently Started Downtrending']}\n\n" \
+            f"Still In An Uptrend:\n{trending['Uptrending']}\n\n" \
+            f"Still In A Downtrend:\n{trending['Downtrending']}\n\n"
+        await message.channel.send(stocks_response)
         # Delete the user's initial message
         await message.delete()
 
