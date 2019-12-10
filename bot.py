@@ -57,13 +57,12 @@ async def on_message(message):
             )
         # Delete the user's initial message
         await message.delete()
-    elif message.content.startswith('!stocks'):
+    elif message.content.startswith('!stocks') and message.author.guild_permissions.administrator is True:
         # Retrieve the current stocks
         trending = check_stocks(stocks_list)
-        stocks_response = f"Recently Started Uptrending:\n{trending['Recently Started Uptrending']}\n\n" \
-            f"Recently Started Downtrending:\n{trending['Recently Started Downtrending']}\n\n" \
-            f"Still In An Uptrend:\n{trending['Uptrending']}\n\n" \
-            f"Still In A Downtrend:\n{trending['Downtrending']}\n\n"
+        stocks_response = ''.join([
+            f"__**{key}**__:\n{', '.join(item)}\n\n" if item else f"__**{key}**__:\n{None}\n\n" for key, item in trending.items()
+        ])
         await message.channel.send(stocks_response)
         # Delete the user's initial message
         await message.delete()
@@ -71,7 +70,7 @@ async def on_message(message):
 
 @client.event
 async def on_ready():
-    print(f'{client.user} has connected to Discord!')
+    print(f'{client.user} has connected to {client.guilds[0].name}')
 
 
 client.run(credentials['DISCORD']['TOKEN'])
