@@ -10,7 +10,7 @@ scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-google_credentials = ServiceAccountCredentials.from_json_keyfile_name('../google_credentials.json', scope)
+google_credentials = ServiceAccountCredentials.from_json_keyfile_name('google_credentials.json', scope)
 gc = gspread.authorize(google_credentials)
 
 # NOTE - you must share the spreadsheet you want to write to with the CLIENT_EMAIL specified in the
