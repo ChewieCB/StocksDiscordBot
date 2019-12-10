@@ -104,4 +104,3 @@ def check_stocks(stocks_list):
         'Downtrending': down,
         'Recently Started Downtrending': recently_down,
     }
-
