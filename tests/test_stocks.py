@@ -2,7 +2,7 @@ import yaml
 import pytest
 import pandas as pd
 
-from stocks import get_bollinger_bands, get_trends
+from stocks import get_bollinger_bands, get_trends, check_stocks
 
 
 class TestCaseStocks:
@@ -13,17 +13,7 @@ class TestCaseStocks:
         with open('/Users/jackmccaffrey/PycharmProjects/StocksDiscordBot/config.yaml', 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
         cls.stocks_list = [stock.upper() for stock in cls.credentials['STOCKS']]
-
-    def test_bollinger_bands(self):
-        """"""
-        # TODO:
-
-    def test_get_trends(self):
-        """
-        Pass a test dict with an example of each type of result returned by the function to test its functionality.
-        :return:
-        """
-        test_dict = {
+        cls.trends_test_dict = {
             'UPTRENDING': pd.DataFrame(data={
                 'close': [37.81],
                 'Live Price': [38.25],
@@ -49,6 +39,24 @@ class TestCaseStocks:
                 'Lower Band': [29.83]
             })
         }
-        assert get_trends(test_dict) == (['UPTRENDING'], ['RECENTLY_STARTED_UPTRENDING'], ['DOWNTRENDING'], ['RECENTLY_STARTED_DOWNTRENDING'])
 
+    def test_bollinger_bands(self):
+        """"""
+        # TODO
+
+    def test_get_trends(self):
+        """
+        Pass a test dict with an example of each type of result returned by the function to test its functionality.
+        :return:
+        """
+        assert get_trends(self.trends_test_dict) == (
+            ['UPTRENDING'],
+            ['RECENTLY_STARTED_UPTRENDING'],
+            ['DOWNTRENDING'],
+            ['RECENTLY_STARTED_DOWNTRENDING']
+        )
+
+    def test_check_stocks(self):
+        """"""
+        # TODO
 
