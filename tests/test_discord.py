@@ -1,3 +1,4 @@
+import os
 import yaml
 import discord
 
@@ -8,7 +9,7 @@ class TestCaseDiscordClient:
     def setup_class(cls):
         """Setup any test variables."""
         cls.client = discord.Client()
-        with open('config.yaml', 'r') as config_file:
+        with open(os.path.abspath('config.yaml'), 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
 
     def test_client_connection(self):

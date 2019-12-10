@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import re
 import yaml
 import discord
@@ -9,7 +10,7 @@ from stocks import check_stocks
 # Initialise the discord client
 client = discord.Client()
 # Read the API keys from the config file
-with open('config.yaml', 'r') as config_file:
+with open(os.path.abspath('config.yaml'), 'r') as config_file:
     credentials = yaml.safe_load(config_file)
 
 # Get list of stocks

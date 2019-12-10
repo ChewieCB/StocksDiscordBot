@@ -1,3 +1,4 @@
+import os
 import yaml
 import pandas as pd
 
@@ -9,7 +10,7 @@ class TestCaseStocks:
     @classmethod
     def setup_class(cls):
         """Setup any test variables."""
-        with open('config.yaml', 'r') as config_file:
+        with open(os.path.abspath('config.yaml'), 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
         cls.stocks_list = [stock.upper() for stock in cls.credentials['STOCKS']]
         cls.trends_test_dict = {

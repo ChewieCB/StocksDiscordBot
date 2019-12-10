@@ -1,3 +1,4 @@
+import os
 import json
 import yaml
 import gspread
@@ -16,7 +17,7 @@ scope = [
     'https://spreadsheets.google.com/feeds',
     'https://www.googleapis.com/auth/drive'
 ]
-credentials = ServiceAccountCredentials.from_json_keyfile_name('google_credentials.json', scope)
+credentials = ServiceAccountCredentials.from_json_keyfile_name(os.path.abspath('google_credentials.json'), scope)
 gc = gspread.authorize(credentials)
 
 
@@ -29,10 +30,10 @@ class TestCaseSheet:
         :return:
         """
         # Get credentials from config gile
-        with open('config.yaml', 'r') as config_file:
+        with open(os.path.abspath('config.yaml'), 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
         # Get test data
-        with open('tests/test_user_data.json', 'r+') as read_file:
+        with open(os.path.abspath('tests/test_user_data.json'), 'r+') as read_file:
             cls.test_data = json.load(read_file)
         # create a new worksheet and populate it for testing
         cls.sheet = gc.open_by_url(SHEET_URL)
