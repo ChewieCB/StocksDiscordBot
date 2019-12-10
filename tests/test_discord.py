@@ -1,8 +1,5 @@
 import yaml
-import pytest
 import discord
-
-from bot import on_message
 
 
 class TestCaseDiscordClient:
