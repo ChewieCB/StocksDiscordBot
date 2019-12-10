@@ -27,35 +27,3 @@ class TestCaseDiscordClient:
         :return:
         """
         assert [self.credentials[service] for service in self.credentials.keys()]
-
-    def test_no_self_reply(self):
-        """"""
-        # TODO
-        pass
-        # we don't want the bot replying to itself
-        # assert not on_message()
-
-    def test_message_detection(self):
-        """"""
-        # TODO
-        pass
-
-    def test_detect_assign_command(self):
-        """"""
-        # TODO
-        pass
-
-    def test_get_user_data(self):
-        """"""
-        # TODO
-        pass
-
-    def test_assign_role(self):
-        """"""
-        # TODO
-        pass
-
-    def test_delete_original_message(self):
-        """"""
-        # TODO
-        pass

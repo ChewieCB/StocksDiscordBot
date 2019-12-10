@@ -58,7 +58,7 @@ class TestCaseSheet:
         Check that each test email and test username is written to the sheet successfully.
         :return:
         """
-        assert [write_to_sheet(self.test_worksheet, user['email'], user['username']) for user in self.test_data]
+        assert [write_to_sheet(user['email'], user['username']) for user in self.test_data]
 
     def test_existing_user(self):
         """
@@ -66,5 +66,5 @@ class TestCaseSheet:
         :return:
         """
         for user in self.test_data:
-            assert write_to_sheet(self.test_worksheet, user['email'], user['username']) \
+            assert write_to_sheet(user['email'], user['username']) \
                    == "Email and/or username already registered!"

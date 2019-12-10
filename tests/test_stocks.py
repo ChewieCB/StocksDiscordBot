@@ -1,8 +1,7 @@
 import yaml
-import pytest
 import pandas as pd
 
-from stocks import get_bollinger_bands, get_trends, check_stocks
+from stocks import get_trends
 
 
 class TestCaseStocks:
@@ -40,10 +39,6 @@ class TestCaseStocks:
             })
         }
 
-    def test_bollinger_bands(self):
-        """"""
-        # TODO
-
     def test_get_trends(self):
         """
         Pass a test dict with an example of each type of result returned by the function to test its functionality.
@@ -55,8 +50,4 @@ class TestCaseStocks:
             ['DOWNTRENDING'],
             ['RECENTLY_STARTED_DOWNTRENDING']
         )
-
-    def test_check_stocks(self):
-        """"""
-        # TODO
 
