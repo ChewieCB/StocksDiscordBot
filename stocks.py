@@ -1,49 +1,14 @@
 import yaml
 import datetime
 import pandas as pd
-from yahoo_fin import stock_info as si
+from yahoofinancials import YahooFinancials
 from multiprocessing import Pool
 
 # Read the API keys from the config file
 with open('config.yaml', 'r') as config_file:
     credentials = yaml.safe_load(config_file)
 
-stocks_list = credentials['STOCKS']
-
-
-def get_live_prices(stock, null_var = None):
-    """
-    Get the current price of a given stock.
-    :param stocks:
-    :return:
-    """
-    # Get live prices for each stock
-    try:
-        _live_data = si.get_live_price(stock)
-    except ValueError:
-        _live_data = None
-
-    return _live_data
-
-
-def get_closing_prices(stock, _days: int = 365):
-    """
-    Get the historical closing prices for a given stock.
-    :param stock: Name of the stock to get prices for.
-    :param _days: How many days in the past to pull stocks from (start date).
-    :return: Historical closing prices for the given stock from the start date to present.
-    """
-    # Get current date
-    current_date = datetime.datetime.now()
-    # Set start date (length) days before current date
-    _start = current_date - datetime.timedelta(days=_days)
-    # Get previous close price
-    try:
-        _closing_data = si.get_data(stock, start_date=_start)['close']
-    except ValueError:
-        _closing_data = None
-
-    return _closing_data
+stocks_list = [stock.upper() for stock in credentials['STOCKS']]
 
 
 def get_bollinger_bands(stock: pd.DataFrame, length: int = 200, deviations: int = 1):
@@ -56,8 +21,8 @@ def get_bollinger_bands(stock: pd.DataFrame, length: int = 200, deviations: int 
     :return: An updated DataFrame containing the upper and lower bolling bands.
     """
     # Get moving average and standard deviation
-    stock[f'{length} Day MA'] = stock['Closing Prices'].rolling(window=length).mean()
-    stock[f'{length} Day STD'] = stock['Closing Prices'].rolling(window=length).std()
+    stock[f'{length} Day MA'] = stock['close'].rolling(window=length).mean()
+    stock[f'{length} Day STD'] = stock['close'].rolling(window=length).std()
     # Calculate upper and lower bollinger bands
     stock['Upper Band'] = stock[f'{length} Day MA'] + (stock[f'{length} Day STD'] * deviations)
     stock['Lower Band'] = stock[f'{length} Day MA'] - (stock[f'{length} Day STD'] * deviations)
@@ -80,14 +45,14 @@ def get_trends(data: dict):
 
     for stock, dataframe in data.items():
         # uptrending
-        if dataframe['Live Price'][-1] > dataframe['Upper Band'][-1]:
-            if dataframe['Previous Closing Price'][-1] < dataframe['Upper Band'][-1]:
+        if dataframe['Live Price'].iloc[-1] > dataframe['Upper Band'].iloc[-1]:
+            if dataframe['close'].iloc[-1] < dataframe['Upper Band'].iloc[-1]:
                 recently_started_uptrending.append(stock)
             else:
                 uptrending.append(stock)
         # downtrending
-        elif dataframe['Live Price'][-1] < dataframe['Lower Band'][-1]:
-            if dataframe['Previous Closing Price'][-1] > dataframe['Lower Band'][-1]:
+        elif dataframe['Live Price'].iloc[-1] < dataframe['Lower Band'].iloc[-1]:
+            if dataframe['close'].iloc[-1] > dataframe['Lower Band'].iloc[-1]:
                 recently_started_downtrending.append(stock)
             else:
                 downtrending.append(stock)
@@ -97,49 +62,49 @@ def get_trends(data: dict):
 
 def main():
     start = datetime.datetime.now()
+    # Get current date and start date (length) days before current date
+    current_date = datetime.datetime.now()
+    start_date = current_date - datetime.timedelta(days=365)
+    # Convert into YMD for stocks api
+    _start = f'{start_date.year}-{start_date.month}-{start_date.day}'
+    _end = f'{current_date.year}-{current_date.month}-{current_date.day}'
+
+    # Setup ticker objects
+    tickers = [YahooFinancials(stock) for stock in stocks_list]
+
     # Setup multi-threading pool with a worker for each stock
-    with Pool(len(stocks_list) * 2) as p:
+    with Pool(len(stocks_list) * 4) as p:
         # Get pool result objects asynchronously
-        _live_workers = {
-            stock: p.apply_async(get_live_prices, args=(stock, None)) for stock in stocks_list
+        _current_workers = {
+            ticker.ticker: p.apply_async(ticker.get_current_price) for ticker in tickers
         }
-        _closing_workers = {
-            stock: p.apply_async(get_closing_prices, args=(stock, 365)) for stock in stocks_list
+        _historical_price_workers = {
+            ticker.ticker: p.apply_async(ticker.get_historical_price_data, args=(_start, _end, 'daily')) for ticker in tickers
         }
         # Get data from pool objects
-        live_data = {
-            stock: worker.get() for stock, worker in _live_workers.items()
+        current_data = {
+            stock: worker.get() for stock, worker in _current_workers.items()
         }
-        closing_data = {
-            stock: worker.get() for stock, worker in _closing_workers.items()
+        price_data = {
+            stock: pd.DataFrame(worker.get()[stock]['prices']) for stock, worker in _historical_price_workers.items()
         }
-        # Get yesterday's close
-        # TODO: add check for date index to make sure previous close isn't the same day as the current date
-        previous_closes = {
-            stock: data[-1] if closing_data[stock] is not None else None for stock, data in closing_data.items()
-        }
-        # Create a dataframe for each stock
-        dataframes = {
-            stock: pd.DataFrame(data={
-                'Live Price': live_data[stock] if live_data[stock] is not None else [None],
-                'Closing Prices': closing_data[stock] if closing_data[stock] is not None else [None],
-                'Previous Closing Price': previous_closes[stock] if previous_closes[stock] is not None else [None],
-            })
-            for stock in stocks_list
-        }
+        # Append current and previous closing prices to price_data df
+        for stock in stocks_list:
+            price_data[stock]['Live Price'] = current_data[stock]
+            price_data[stock]['Previous Closing Price'] = price_data[stock]['close'].iloc[-1]
         # Get bollinger bands
         bollinger_bands = {
-            stock: get_bollinger_bands(dataframes[stock]) if dataframes[stock]['Closing Prices'] is not None else [None] for stock in stocks_list
+            stock: get_bollinger_bands(price_data[stock]) for stock in stocks_list
         }
-        # Analyse the stock trends
-        up, recently_up, down, recently_down = get_trends(bollinger_bands)
-        print(f'UP:\t{up}')
-        print(f'RECENTLY UP:\t{recently_up}')
-        print(f'DOWN:\t{down}')
-        print(f'RECENTLY DOWN:\t{recently_down}')
-        end = datetime.datetime.now()
-        diff = end - start
-        print(f'Runtime: {diff}')
-        # FIXME!!!!!! ------> Find out why some stocks aren't being pulled properly from the yahoo finance API
+    # Analyse the stock trends
+    up, recently_up, down, recently_down = get_trends(bollinger_bands)
+    print(f'UP:\t{up}')
+    print(f'RECENTLY UP:\t{recently_up}')
+    print(f'DOWN:\t{down}')
+    print(f'RECENTLY DOWN:\t{recently_down}')
+    end = datetime.datetime.now()
+    diff = end - start
+    print(f'Runtime: {diff}')
+
 
 main()
