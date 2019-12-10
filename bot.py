@@ -2,6 +2,8 @@ import re
 import yaml
 import discord
 
+from sheet import write_to_sheet
+
 # Initialise the discord client
 client = discord.Client()
 # Read the API keys from the config file
@@ -35,21 +37,29 @@ async def on_message(message):
                 # Alert the user that they are already premium
                 await message.channel.send(f"{message.author.mention} You are already a premium member!")
             else:
-                # Upgrade the user role to premium
-                await message.author.add_roles(premium_role)
-                await message.channel.send(f"{message.author.mention} Welcome to premium!")
+                # Add the email and username to the spreadsheet
+                sheet_response = write_to_sheet(email_address, message.author._user.name)
+                if sheet_response == "Email and/or username already registered!":
+                    await message.channel.send(f"{message.author.mention} {sheet_response}")
+                else:
+                    # Upgrade the user role to premium
+                    await message.author.add_roles(premium_role)
+                    await message.channel.send(f"{message.author.mention} {sheet_response}Welcome to premium!")
         else:
             # Mention the user and prompt them to try again with a valid email
             no_email_msg = "No email found! Please try again with a valid email."
             await message.channel.send(
                 f"{message.author.mention} {no_email_msg}"
             )
+        # Delete the user's initial message
+        await message.delete()
     elif message.content.startswith('!stocks'):
         # Retrieve the current stocks
         # get_stocks(credentials['STOCKS'])
+        #
         pass
-    # Delete the user's initial message
-    await message.delete()
+        # Delete the user's initial message
+        await message.delete()
 
 
 @client.event
