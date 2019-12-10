@@ -57,13 +57,16 @@ async def on_message(message):
             )
         # Delete the user's initial message
         await message.delete()
-    elif message.content.startswith('!stocks') and message.author.guild_permissions.administrator is True:
-        # Retrieve the current stocks
-        trending = check_stocks(stocks_list)
-        stocks_response = ''.join([
-            f"__**{key}**__:\n{', '.join(item)}\n\n" if item else f"__**{key}**__:\n{None}\n\n" for key, item in trending.items()
-        ])
-        await message.channel.send(stocks_response)
+    elif message.content.startswith('!stocks'):
+        if message.author.guild_permissions.administrator is True:
+            # Retrieve the current stocks
+            trending = check_stocks(stocks_list)
+            stocks_response = ''.join([
+                f"__**{key}**__:\n{', '.join(item)}\n\n" if item else f"__**{key}**__:\n{None}\n\n" for key, item in trending.items()
+            ])
+            await message.channel.send(stocks_response)
+        else:
+            await message.channel.send(f'Sorry {message.author.mention}, only the server admin can call that function!')
         # Delete the user's initial message
         await message.delete()
 
