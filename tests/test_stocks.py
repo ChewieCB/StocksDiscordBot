@@ -1,8 +1,8 @@
 import yaml
 import pytest
-from multiprocessing import Pool
+import pandas as pd
 
-from stocks import get_live_prices, get_closing_prices, get_bollinger_bands, get_trends
+from stocks import get_bollinger_bands, get_trends
 
 
 class TestCaseStocks:
@@ -10,56 +10,45 @@ class TestCaseStocks:
     @classmethod
     def setup_class(cls):
         """Setup any test variables."""
-        with open('config.yaml', 'r') as config_file:
+        with open('/Users/jackmccaffrey/PycharmProjects/StocksDiscordBot/config.yaml', 'r') as config_file:
             cls.credentials = yaml.safe_load(config_file)
         cls.stocks_list = [stock.upper() for stock in cls.credentials['STOCKS']]
 
-    @pytest.skip
-    def test_live_prices(self):
-        """"""
-        data = {
-            stock: get_live_prices(stock) for stock in self.stocks_list
-        }
-        assert data
-
-    @pytest.skip
-    def test_closing_prices(self):
-        """"""
-        data = {
-            stock: get_closing_prices(stock) for stock in self.stocks_list
-        }
-        assert data
-
-    @pytest.skip
     def test_bollinger_bands(self):
         """"""
         # TODO:
 
-    @pytest.skip
     def test_get_trends(self):
-        """"""
-        # TODO:
+        """
+        Pass a test dict with an example of each type of result returned by the function to test its functionality.
+        :return:
+        """
+        test_dict = {
+            'UPTRENDING': pd.DataFrame(data={
+                'close': [37.81],
+                'Live Price': [38.25],
+                'Upper Band': [31.23],
+                'Lower Band': [32.01]
+            }),
+            'RECENTLY_STARTED_UPTRENDING': pd.DataFrame(data={
+                'close': [42.41],
+                'Live Price': [49.88],
+                'Upper Band': [46.35],
+                'Lower Band': [40.93]
+            }),
+            'DOWNTRENDING': pd.DataFrame(data={
+                'close': [23.14],
+                'Live Price': [23.05],
+                'Upper Band': [29.14],
+                'Lower Band': [25.66]
+            }),
+            'RECENTLY_STARTED_DOWNTRENDING': pd.DataFrame(data={
+                'close': [29.85],
+                'Live Price': [28.91],
+                'Upper Band': [41.52],
+                'Lower Band': [29.83]
+            })
+        }
+        assert get_trends(test_dict) == (['UPTRENDING'], ['RECENTLY_STARTED_UPTRENDING'], ['DOWNTRENDING'], ['RECENTLY_STARTED_DOWNTRENDING'])
 
-    def test_multiprocessing_live_prices(self):
-        """"""
-        # TODO
-        # with Pool(len(self.stocks_list)) as p:
-        #     workers = {
-        #         stock: p.apply_async(get_closing_prices, args=(stock, 365)) for stock in self.stocks_list
-        #     }
-        #     data = {
-        #         stock: worker.get() for stock, worker in workers.items()
-        #     }
-        #     assert data
-
-    def test_multiprocessing_closing_prices(self):
-        """"""
-        with Pool(len(self.stocks_list)) as p:
-            workers = {
-                stock: p.apply_async(get_closing_prices, args=(stock, 365)) for stock in self.stocks_list
-            }
-            data = {
-                stock: worker.get() for stock, worker in workers.items()
-            }
-            assert data
 
