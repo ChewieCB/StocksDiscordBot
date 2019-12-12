@@ -38,4 +38,4 @@ The bot currently has two main functions:
 - Calling this function returns the current trends of all stocks stored in the *config.yaml* file.
 
 ## Important
-If you fork this repo, it is **very highly reccomended** that you **do not store** either of your *config.yaml* or *goolge_credentials.json* files on git - this prevents unauthorised use of your API keys.
+If you fork this repo, it is **very highly reccomended** that you **do not store** either of your *config.yaml* or *google_credentials.json* files on git - this prevents unauthorised use of your API keys.
