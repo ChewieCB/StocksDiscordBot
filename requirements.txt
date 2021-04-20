@@ -27,7 +27,7 @@ packaging==19.2
 pandas==0.25.3
 parse==1.12.1
 pluggy==0.13.1
-py==1.8.0
+py==1.10.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
 pycparser==2.19
